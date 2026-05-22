@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import ru.danilavak.zizu.common.security.AuthenticatedUser;
 import ru.danilavak.zizu.model.UserAccount;
 import ru.danilavak.zizu.model.UserRole;
 import ru.danilavak.zizu.service.AuthTokenService;
@@ -51,7 +52,8 @@ public class AuthController {
 
     @GetMapping("/me")
     public CurrentUserResponse me(Authentication authentication) {
-        return new CurrentUserResponse(authentication.getName());
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        return new CurrentUserResponse(user.userId(), user.username(), user.role(), user.sessionId());
     }
 
     public record RegistrationRequest(
@@ -92,6 +94,6 @@ public class AuthController {
         }
     }
 
-    public record CurrentUserResponse(String username) {
+    public record CurrentUserResponse(Long id, String username, UserRole role, Long sessionId) {
     }
 }

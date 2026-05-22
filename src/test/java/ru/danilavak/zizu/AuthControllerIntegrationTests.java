@@ -65,7 +65,10 @@ class AuthControllerIntegrationTests {
         mockMvc.perform(get("/auth/me")
                         .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("alice"));
+                .andExpect(jsonPath("$.id").isNumber())
+                .andExpect(jsonPath("$.username").value("alice"))
+                .andExpect(jsonPath("$.role").value("USER"))
+                .andExpect(jsonPath("$.sessionId").isNumber());
 
         String refreshBody = """
                 {

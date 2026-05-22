@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import io.jsonwebtoken.JwtException;
+import ru.danilavak.zizu.common.security.AuthenticatedUser;
+import ru.danilavak.zizu.model.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,8 +39,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = authorizationHeader.substring(7);
         try {
             JwtTokenService.AccessTokenPayload payload = jwtTokenService.parseAccessToken(token);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            AuthenticatedUser principal = new AuthenticatedUser(
+                    payload.userId(),
                     payload.username(),
+                    UserRole.valueOf(payload.role()),
+                    payload.sessionId()
+            );
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    principal,
                     token,
                     List.of(new SimpleGrantedAuthority("ROLE_" + payload.role()))
             );

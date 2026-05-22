@@ -13,6 +13,11 @@
 - OpenAPI endpoint
 - Docker build
 - GitHub Actions pipeline with build, tests, scans, DAST and fuzzing
+- `compose.yaml` for PostgreSQL and MinIO
+- PowerShell script for signature keystore generation
+- Unified API error format
+- Typed JWT principal for future domain modules
+- Ready `Ticket` and `TicketResponse` contracts
 
 ## Environment variables
 
@@ -48,7 +53,21 @@ Bootstrap admin account:
 
 ## Local run
 
-Start PostgreSQL and create a database, for example `zizu`. Then run:
+Copy `.env.example` to `.env` and adjust values if needed.
+
+For local infrastructure:
+
+```powershell
+docker compose up -d
+```
+
+For signature keystore bootstrap:
+
+```powershell
+.\scripts\create-signature-keystore.ps1
+```
+
+Then run:
 
 ```powershell
 ./mvnw.cmd spring-boot:run
@@ -65,4 +84,9 @@ Useful endpoints:
 
 ## What comes next
 
-The repository is intentionally trimmed to infrastructure and security foundation. Business modules for licenses, signatures, binary export, and file storage are not implemented yet, but the package structure and configuration are ready for that work.
+The repository is intentionally trimmed to infrastructure and implementation contracts. Full business modules for licenses, signatures, binary export, and file storage are still to be implemented, but the repository already contains the runtime, CI, local infra, API conventions, and domain entry points needed to start them directly.
+
+Supporting docs:
+
+- [Foundation checklist](docs/foundation-checklist.md)
+- [GitHub secrets](docs/github-secrets.md)
