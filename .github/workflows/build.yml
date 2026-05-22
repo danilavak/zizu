@@ -1,0 +1,379 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  security-events: write
+  packages: write
+
+env:
+  JAVA_VERSION: "21"
+  ARTIFACT_NAME: zizu-jar
+  H2_DB_URL: jdbc:h2:mem:zizu-ci;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+
+jobs:
+  secret_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download gitleaks
+        run: |
+          mkdir -p target/secrets
+          curl -fsSL -o target/secrets/gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.24.2/gitleaks_8.24.2_linux_x64.tar.gz
+          tar -xzf target/secrets/gitleaks.tar.gz -C target/secrets
+          chmod +x target/secrets/gitleaks
+
+      - name: Scan repository for secrets
+        run: |
+          target/secrets/gitleaks git . --report-format json --report-path target/secrets/gitleaks-report.json --exit-code 1
+
+      - name: Upload secret scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: target/secrets/gitleaks-report.json
+
+  container_scan:
+    runs-on: ubuntu-latest
+    needs: secret_scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Trivy
+        run: |
+          mkdir -p target/container/trivy
+          curl -fsSL -o target/container/trivy/trivy.tar.gz https://github.com/aquasecurity/trivy/releases/download/v0.70.0/trivy_0.70.0_Linux-64bit.tar.gz
+          tar -xzf target/container/trivy/trivy.tar.gz -C target/container/trivy
+          chmod +x target/container/trivy/trivy
+
+      - name: Scan Dockerfile
+        run: |
+          target/container/trivy/trivy config --severity HIGH,CRITICAL --exit-code 1 --format json --output target/container/trivy-report.json Dockerfile
+
+      - name: Upload container scan report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: target/container/trivy-report.json
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - secret_scan
+      - container_scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Prepare Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Run tests and package
+        run: ./mvnw -B clean verify
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./target/*.jar
+
+  publish_container:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - container_scan
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Prepare Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Publish image to GHCR
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/zizu:${GITHUB_SHA::7}
+          ./mvnw -B -DskipTests package jib:build -Djib.containerizingMode=packaged -Djib.to.image=$IMAGE_NAME -Djib.to.auth.username=${{ github.actor }} -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}
+
+  sast:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Semgrep
+        run: python -m pip install semgrep
+
+      - name: Run SAST
+        run: semgrep scan --metrics=off --config semgrep/rules.yml --sarif --sarif-output semgrep.sarif . || true
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: semgrep.sarif
+
+  sca:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Prepare Maven Wrapper
+        run: chmod +x ./mvnw
+
+      - name: Run SCA
+        run: ./mvnw -B dependency-check:check
+
+      - name: Upload SCA report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
+
+  dast_baseline:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: target
+
+      - name: Prepare ZAP files
+        run: |
+          mkdir -p target/zap .zap
+          touch .zap/rules.tsv
+          chmod -R a+w "$GITHUB_WORKSPACE"
+
+      - name: Start application
+        env:
+          DB_URL: ${{ env.H2_DB_URL }}
+          DB_USERNAME: sa
+          DB_PASSWORD: ""
+          DB_DRIVER: org.h2.Driver
+          JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
+        run: |
+          java -jar target/*.jar > target/zap/app.log 2>&1 &
+          echo $! > target/zap/app.pid
+          sleep 30
+          curl --fail http://localhost:8080/actuator/health
+
+      - name: Run ZAP baseline
+        continue-on-error: true
+        uses: zaproxy/action-baseline@v0.9.0
+        with:
+          target: "http://localhost:8080"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-I"
+          allow_issue_writing: false
+          fail_action: false
+
+      - name: Collect baseline report
+        if: always()
+        run: |
+          mkdir -p target/zap
+          cp report_html.html target/zap/zap-baseline-report.html
+          cp report_md.md target/zap/zap-baseline-report.md
+          cp report_json.json target/zap/zap-baseline-report.json
+
+      - name: Upload DAST baseline report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-baseline-report
+          path: |
+            target/zap/zap-baseline-report.html
+            target/zap/zap-baseline-report.md
+            target/zap/zap-baseline-report.json
+            target/zap/app.log
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f target/zap/app.pid ]; then
+            kill "$(cat target/zap/app.pid)" || true
+          fi
+
+  dast_api:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: target
+
+      - name: Prepare ZAP files
+        run: |
+          mkdir -p target/zap .zap
+          touch .zap/rules.tsv
+          chmod -R a+w "$GITHUB_WORKSPACE"
+
+      - name: Start application
+        env:
+          DB_URL: ${{ env.H2_DB_URL }}
+          DB_USERNAME: sa
+          DB_PASSWORD: ""
+          DB_DRIVER: org.h2.Driver
+          JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
+        run: |
+          java -jar target/*.jar > target/zap/app.log 2>&1 &
+          echo $! > target/zap/app.pid
+          sleep 30
+          curl --fail http://localhost:8080/actuator/health
+
+      - name: Run ZAP API scan
+        continue-on-error: true
+        uses: zaproxy/action-api-scan@v0.10.0
+        with:
+          target: "http://localhost:8080/v3/api-docs"
+          format: openapi
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-I"
+          allow_issue_writing: false
+          fail_action: false
+
+      - name: Collect API report
+        if: always()
+        run: |
+          mkdir -p target/zap
+          cp report_html.html target/zap/zap-api-report.html
+          cp report_md.md target/zap/zap-api-report.md
+          cp report_json.json target/zap/zap-api-report.json
+
+      - name: Upload DAST API report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-api-report
+          path: |
+            target/zap/zap-api-report.html
+            target/zap/zap-api-report.md
+            target/zap/zap-api-report.json
+            target/zap/app.log
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f target/zap/app.pid ]; then
+            kill "$(cat target/zap/app.pid)" || true
+          fi
+
+  fuzzing:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: target
+
+      - name: Download ffuf
+        run: |
+          mkdir -p target/fuzzing
+          curl -fsSL -o target/fuzzing/ffuf.tar.gz https://github.com/ffuf/ffuf/releases/download/v2.1.0/ffuf_2.1.0_linux_amd64.tar.gz
+          tar -xzf target/fuzzing/ffuf.tar.gz -C target/fuzzing
+          chmod +x target/fuzzing/ffuf
+
+      - name: Start application
+        env:
+          DB_URL: ${{ env.H2_DB_URL }}
+          DB_USERNAME: sa
+          DB_PASSWORD: ""
+          DB_DRIVER: org.h2.Driver
+          JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
+        run: |
+          java -jar target/*.jar > target/fuzzing/app.log 2>&1 &
+          echo $! > target/fuzzing/app.pid
+          sleep 30
+          curl --fail http://127.0.0.1:8080/actuator/health
+
+      - name: Run web fuzzing
+        run: |
+          target/fuzzing/ffuf -w fuzzing/paths.txt -u http://127.0.0.1:8080/FUZZ -mc all -fc 404 -maxtime 60 -timeout 5 -o target/fuzzing/ffuf-report.json -of json -debug-log target/fuzzing/ffuf-debug.log || true
+
+      - name: Upload fuzzing report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffuf-report
+          path: |
+            target/fuzzing/ffuf-report.json
+            target/fuzzing/ffuf-debug.log
+            target/fuzzing/app.log
+
+      - name: Stop application
+        if: always()
+        run: |
+          if [ -f target/fuzzing/app.pid ]; then
+            kill "$(cat target/fuzzing/app.pid)" || true
+          fi

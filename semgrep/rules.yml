@@ -1,0 +1,14 @@
+rules:
+  - id: java-test-hardcoded-password
+    message: Hardcoded password found in test code.
+    severity: WARNING
+    languages:
+      - java
+    paths:
+      include:
+        - '**/src/test/java/**/*.java'
+    patterns:
+      - pattern: private static final String $NAME = "$VALUE";
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: '.*PASSWORD.*'

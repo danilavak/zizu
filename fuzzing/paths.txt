@@ -1,0 +1,16 @@
+login
+courses
+students
+actuator
+actuator/health
+v3
+v3/api-docs
+proxy
+xml
+admin
+api
+swagger-ui
+swagger-ui/index.html
+favicon.ico
+robots.txt
+does-not-exist
