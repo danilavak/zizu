@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ru.danilavak.zizu.model.UserAccount;
 import ru.danilavak.zizu.repository.UserAccountRepository;
+import ru.danilavak.zizu.signature.DigitalSignatureService;
 
 @Service
 public class LicenseService {
@@ -23,6 +24,7 @@ public class LicenseService {
     private final DeviceLicenseRepository deviceLicenseRepository;
     private final LicenseHistoryRepository licenseHistoryRepository;
     private final UserAccountRepository userAccountRepository;
+    private final DigitalSignatureService digitalSignatureService;
     private final long ticketLifetimeSeconds;
 
     public LicenseService(
@@ -33,6 +35,7 @@ public class LicenseService {
             DeviceLicenseRepository deviceLicenseRepository,
             LicenseHistoryRepository licenseHistoryRepository,
             UserAccountRepository userAccountRepository,
+            DigitalSignatureService digitalSignatureService,
             @Value("${app.license.ticket-lifetime-seconds:300}") long ticketLifetimeSeconds
     ) {
         this.productRepository = productRepository;
@@ -42,6 +45,7 @@ public class LicenseService {
         this.deviceLicenseRepository = deviceLicenseRepository;
         this.licenseHistoryRepository = licenseHistoryRepository;
         this.userAccountRepository = userAccountRepository;
+        this.digitalSignatureService = digitalSignatureService;
         this.ticketLifetimeSeconds = ticketLifetimeSeconds;
     }
 
@@ -201,7 +205,7 @@ public class LicenseService {
                 device == null ? null : device.getId(),
                 license.isBlocked()
         );
-        return new TicketResponse(ticket, null);
+        return new TicketResponse(ticket, digitalSignatureService.signObject(ticket));
     }
 
     private Device resolveLatestDeviceOrNull(License license) {

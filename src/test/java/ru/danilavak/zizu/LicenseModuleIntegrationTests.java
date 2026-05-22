@@ -102,7 +102,8 @@ class LicenseModuleIntegrationTests {
                 .andExpect(jsonPath("$.ticket.userId").value(user.getId()))
                 .andExpect(jsonPath("$.ticket.deviceId").isNumber())
                 .andExpect(jsonPath("$.ticket.licenseActivationDate").isNotEmpty())
-                .andExpect(jsonPath("$.ticket.licenseExpirationDate").isNotEmpty());
+                .andExpect(jsonPath("$.ticket.licenseExpirationDate").isNotEmpty())
+                .andExpect(jsonPath("$.signature").isNotEmpty());
 
         mockMvc.perform(post("/licenses/check")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +116,8 @@ class LicenseModuleIntegrationTests {
                                 """.formatted(productId, firstDeviceMac)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.ticket.userId").value(user.getId()))
-                .andExpect(jsonPath("$.ticket.blocked").value(false));
+                .andExpect(jsonPath("$.ticket.blocked").value(false))
+                .andExpect(jsonPath("$.signature").isNotEmpty());
 
         mockMvc.perform(post("/licenses/activate")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -128,7 +130,8 @@ class LicenseModuleIntegrationTests {
                                 }
                                 """.formatted(activationKey, secondDeviceMac)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ticket.deviceId").isNumber());
+                .andExpect(jsonPath("$.ticket.deviceId").isNumber())
+                .andExpect(jsonPath("$.signature").isNotEmpty());
 
         mockMvc.perform(post("/licenses/activate")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +155,8 @@ class LicenseModuleIntegrationTests {
                                 }
                                 """.formatted(activationKey)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.ticket.licenseExpirationDate").isNotEmpty());
+                .andExpect(jsonPath("$.ticket.licenseExpirationDate").isNotEmpty())
+                .andExpect(jsonPath("$.signature").isNotEmpty());
 
         mockMvc.perform(post("/licenses")
                         .contentType(MediaType.APPLICATION_JSON)

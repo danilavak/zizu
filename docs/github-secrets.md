@@ -22,15 +22,23 @@ Recommended repository secrets and variables for `zizu`:
 
 ## Signature module secrets
 
+- `SIGNATURE_KEYSTORE_BASE64`
 - `SIGNATURE_KEYSTORE_LOCATION`
+- `SIGNATURE_KEYSTORE_TYPE`
 - `SIGNATURE_KEYSTORE_PASSWORD`
 - `SIGNATURE_KEY_ALIAS`
 - `SIGNATURE_KEY_PASSWORD`
 
-If the keystore is stored as a file in CI, keep it outside the repository and inject either:
+Recommended approach:
 
-- a path on the runner, or
-- a Base64-encoded file restored during workflow execution.
+- store the PKCS12 keystore in `SIGNATURE_KEYSTORE_BASE64`;
+- set `SIGNATURE_KEYSTORE_TYPE=PKCS12`;
+- keep alias and passwords in separate secrets.
+- for PKCS12, use the same value for `SIGNATURE_KEYSTORE_PASSWORD` and `SIGNATURE_KEY_PASSWORD`.
+
+Fallback approach:
+
+- keep the keystore outside the repository and inject `SIGNATURE_KEYSTORE_LOCATION` with a runner-local path.
 
 ## Container registry
 
