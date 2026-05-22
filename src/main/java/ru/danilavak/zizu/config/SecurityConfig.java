@@ -33,6 +33,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/licenses").hasRole("ADMIN")
+                        .requestMatchers("/licenses/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
                 );
         return http.build();

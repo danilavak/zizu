@@ -38,6 +38,9 @@ public class UserAccountService {
         user.setPasswordHash(passwordEncoder.encode(password));
         user.setRole(role == null ? UserRole.USER : role);
         user.setEnabled(true);
+        user.setAccountExpired(false);
+        user.setAccountLocked(false);
+        user.setCredentialsExpired(false);
         return repository.save(user);
     }
 

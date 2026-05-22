@@ -22,6 +22,9 @@ public class AppUserDetailsService implements UserDetailsService {
                 .map(user -> User.withUsername(user.getUsername())
                         .password(user.getPasswordHash())
                         .roles(user.getRole().name())
+                        .accountExpired(user.isAccountExpired())
+                        .accountLocked(user.isAccountLocked())
+                        .credentialsExpired(user.isCredentialsExpired())
                         .disabled(!user.isEnabled())
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));

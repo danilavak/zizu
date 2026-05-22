@@ -36,6 +36,15 @@ public class UserAccount implements Identifiable {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(nullable = false)
+    private boolean accountExpired;
+
+    @Column(nullable = false)
+    private boolean accountLocked;
+
+    @Column(nullable = false)
+    private boolean credentialsExpired;
+
     public Long getId() {
         return id;
     }
@@ -82,5 +91,29 @@ public class UserAccount implements Identifiable {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isAccountExpired() {
+        return accountExpired;
+    }
+
+    public void setAccountExpired(boolean accountExpired) {
+        this.accountExpired = accountExpired;
+    }
+
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
+    public boolean isCredentialsExpired() {
+        return credentialsExpired;
+    }
+
+    public void setCredentialsExpired(boolean credentialsExpired) {
+        this.credentialsExpired = credentialsExpired;
     }
 }
