@@ -208,12 +208,12 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_DB: zizu_ci
-          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+          POSTGRES_USER: zizu
+          POSTGRES_PASSWORD: zizu
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-cmd="pg_isready -U zizu -d zizu_ci"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -297,12 +297,12 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_DB: zizu_ci
-          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+          POSTGRES_USER: zizu
+          POSTGRES_PASSWORD: zizu
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-cmd="pg_isready -U zizu -d zizu_ci"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
@@ -387,12 +387,12 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_DB: zizu_ci
-          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+          POSTGRES_USER: zizu
+          POSTGRES_PASSWORD: zizu
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-cmd="pg_isready -U zizu -d zizu_ci"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
