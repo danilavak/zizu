@@ -17,6 +17,9 @@ env:
   JAVA_VERSION: "21"
   ARTIFACT_NAME: zizu-jar
   H2_DB_URL: jdbc:h2:mem:zizu-ci;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
+  POSTGRES_CI_URL: jdbc:postgresql://localhost:5432/zizu_ci
+  POSTGRES_CI_USERNAME: zizu
+  POSTGRES_CI_PASSWORD: zizu
 
 jobs:
   secret_scan:
@@ -199,6 +202,20 @@ jobs:
     needs:
       - test
       - build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: zizu_ci
+          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -223,10 +240,9 @@ jobs:
 
       - name: Start application
         env:
-          DB_URL: ${{ env.H2_DB_URL }}
-          DB_USERNAME: sa
-          DB_PASSWORD: ""
-          DB_DRIVER: org.h2.Driver
+          DB_URL: ${{ env.POSTGRES_CI_URL }}
+          DB_USERNAME: ${{ env.POSTGRES_CI_USERNAME }}
+          DB_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
           JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
         run: |
           java -jar target/*.jar > target/zap/app.log 2>&1 &
@@ -275,6 +291,20 @@ jobs:
     needs:
       - test
       - build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: zizu_ci
+          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -299,10 +329,9 @@ jobs:
 
       - name: Start application
         env:
-          DB_URL: ${{ env.H2_DB_URL }}
-          DB_USERNAME: sa
-          DB_PASSWORD: ""
-          DB_DRIVER: org.h2.Driver
+          DB_URL: ${{ env.POSTGRES_CI_URL }}
+          DB_USERNAME: ${{ env.POSTGRES_CI_USERNAME }}
+          DB_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
           JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
         run: |
           java -jar target/*.jar > target/zap/app.log 2>&1 &
@@ -352,6 +381,20 @@ jobs:
     needs:
       - test
       - build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: zizu_ci
+          POSTGRES_USER: ${{ env.POSTGRES_CI_USERNAME }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U ${{ env.POSTGRES_CI_USERNAME }} -d zizu_ci"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -377,10 +420,9 @@ jobs:
 
       - name: Start application
         env:
-          DB_URL: ${{ env.H2_DB_URL }}
-          DB_USERNAME: sa
-          DB_PASSWORD: ""
-          DB_DRIVER: org.h2.Driver
+          DB_URL: ${{ env.POSTGRES_CI_URL }}
+          DB_USERNAME: ${{ env.POSTGRES_CI_USERNAME }}
+          DB_PASSWORD: ${{ env.POSTGRES_CI_PASSWORD }}
           JWT_SECRET: zizu-ci-secret-key-zizu-ci-secret
         run: |
           java -jar target/*.jar > target/fuzzing/app.log 2>&1 &
