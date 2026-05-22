@@ -15,6 +15,7 @@
 - GitHub Actions pipeline with build, tests, scans, DAST and fuzzing
 - `compose.yaml` for PostgreSQL and MinIO
 - PowerShell script for signature keystore generation
+- PowerShell script for HTTPS keystore generation
 - Unified API error format
 - Typed JWT principal for future domain modules
 - Ready `Ticket` and `TicketResponse` contracts
@@ -67,6 +68,12 @@ For signature keystore bootstrap:
 .\scripts\create-signature-keystore.ps1
 ```
 
+For HTTPS bootstrap:
+
+```powershell
+.\scripts\create-https-keystore.ps1
+```
+
 Then run:
 
 ```powershell
@@ -90,3 +97,4 @@ Supporting docs:
 
 - [Foundation checklist](docs/foundation-checklist.md)
 - [GitHub secrets](docs/github-secrets.md)
+- [UML and ER primer](docs/uml-er-primer.md)
