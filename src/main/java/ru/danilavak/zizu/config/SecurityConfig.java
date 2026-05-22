@@ -35,6 +35,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/signature/certificate").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/binary/signatures/full", "/api/binary/signatures/increment").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/api/binary/signatures/by-ids").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/malware-signatures/*/history", "/malware-signatures/*/audit").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/malware-signatures").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/malware-signatures/**").hasRole("ADMIN")

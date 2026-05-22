@@ -28,11 +28,15 @@ public class DigitalSignatureService {
     }
 
     public String signBytes(byte[] payload) {
+        return Base64.getEncoder().encodeToString(signRawBytes(payload));
+    }
+
+    public byte[] signRawBytes(byte[] payload) {
         try {
             Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
             signature.initSign(keyProvider.getKeyMaterial().privateKey());
             signature.update(payload);
-            return Base64.getEncoder().encodeToString(signature.sign());
+            return signature.sign();
         } catch (GeneralSecurityException exception) {
             throw new SignatureConfigurationException("Failed to sign payload", exception);
         }
@@ -45,6 +49,17 @@ public class DigitalSignatureService {
             signature.update(payload);
             return signature.verify(Base64.getDecoder().decode(signatureBase64));
         } catch (GeneralSecurityException | IllegalArgumentException exception) {
+            return false;
+        }
+    }
+
+    public boolean verifyRawBytes(byte[] payload, byte[] signatureBytes) {
+        try {
+            Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
+            signature.initVerify(keyProvider.getKeyMaterial().publicKey());
+            signature.update(payload);
+            return signature.verify(signatureBytes);
+        } catch (GeneralSecurityException exception) {
             return false;
         }
     }
