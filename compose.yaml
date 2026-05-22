@@ -29,6 +29,26 @@ services:
     volumes:
       - minio-data:/data
 
+  minio-init:
+    image: minio/mc:RELEASE.2026-05-21T01-59-54Z
+    container_name: zizu-minio-init
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      until /usr/bin/mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-zizu-root} ${MINIO_ROOT_PASSWORD:-zizu-root-password}; do
+        echo 'waiting for minio';
+        sleep 2;
+      done;
+      printf '%s' '{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:ListBucket\"],\"Resource\":[\"arn:aws:s3:::${MINIO_BUCKET:-signature-files}\"]},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],\"Resource\":[\"arn:aws:s3:::${MINIO_BUCKET:-signature-files}/*\"]}]}' >/tmp/policy.json;
+      /usr/bin/mc mb --ignore-existing local/${MINIO_BUCKET:-signature-files};
+      /usr/bin/mc anonymous set none local/${MINIO_BUCKET:-signature-files};
+      /usr/bin/mc admin user add local ${MINIO_ACCESS_KEY:-zizu-app} ${MINIO_SECRET_KEY:-zizu-app-secret} || true;
+      /usr/bin/mc admin policy create local zizu-signature-files-policy /tmp/policy.json || true;
+      /usr/bin/mc admin policy attach local zizu-signature-files-policy --user ${MINIO_ACCESS_KEY:-zizu-app};
+      exit 0;
+      "
+
 volumes:
   postgres-data:
   minio-data:

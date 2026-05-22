@@ -43,3 +43,12 @@ Fallback approach:
 ## Container registry
 
 The workflow already uses the default `GITHUB_TOKEN` for `ghcr.io` publication.
+
+## MinIO / object storage secrets
+
+- `MINIO_ENDPOINT`
+- `MINIO_ACCESS_KEY`
+- `MINIO_SECRET_KEY`
+- `MINIO_BUCKET`
+- `MINIO_REGION`
+- `MINIO_PRESIGNED_EXPIRY_MINUTES`

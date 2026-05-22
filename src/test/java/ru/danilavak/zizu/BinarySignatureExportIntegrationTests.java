@@ -33,6 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import ru.danilavak.zizu.malware.MalwareSignatureAuditRepository;
+import ru.danilavak.zizu.malware.MalwareSignatureFileRepository;
 import ru.danilavak.zizu.malware.MalwareSignatureHistoryRepository;
 import ru.danilavak.zizu.malware.MalwareSignatureRepository;
 import ru.danilavak.zizu.model.UserRole;
@@ -63,12 +64,16 @@ class BinarySignatureExportIntegrationTests {
     private MalwareSignatureAuditRepository malwareSignatureAuditRepository;
 
     @Autowired
+    private MalwareSignatureFileRepository malwareSignatureFileRepository;
+
+    @Autowired
     private DigitalSignatureService digitalSignatureService;
 
     @BeforeEach
     void clearSignatureState() {
         malwareSignatureAuditRepository.deleteAll();
         malwareSignatureHistoryRepository.deleteAll();
+        malwareSignatureFileRepository.deleteAll();
         malwareSignatureRepository.deleteAll();
     }
 
