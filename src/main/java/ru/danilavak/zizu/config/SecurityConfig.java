@@ -1,5 +1,6 @@
 package ru.danilavak.zizu.config;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -34,6 +35,12 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .requestMatchers("/signature/certificate").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/malware-signatures/*/history", "/malware-signatures/*/audit").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/malware-signatures").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/malware-signatures/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/malware-signatures/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/malware-signatures", "/malware-signatures/increment").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/malware-signatures/by-ids").hasAnyRole("ADMIN", "USER")
                         .requestMatchers("/licenses").hasRole("ADMIN")
                         .requestMatchers("/licenses/**").hasAnyRole("ADMIN", "USER")
                         .anyRequest().authenticated()
