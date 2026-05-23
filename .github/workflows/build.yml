@@ -205,7 +205,14 @@ jobs:
             dependency-check-${{ runner.os }}-
 
       - name: Run SCA
-        run: ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} dependency-check:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -n "$NVD_API_KEY" ]; then
+            ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} -DnvdApiKey="$NVD_API_KEY" dependency-check:check
+          else
+            ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} dependency-check:check
+          fi
 
       - name: Upload SCA report
         if: always()
