@@ -24,6 +24,7 @@ env:
   POSTGRES_CI_URL: jdbc:postgresql://localhost:5432/zizu_ci
   POSTGRES_CI_USERNAME: zizu
   POSTGRES_CI_PASSWORD: zizu
+  DEPENDENCY_CHECK_DATA_DIR: /home/runner/.dependency-check-data
 
 jobs:
   secret_scan:
@@ -195,8 +196,16 @@ jobs:
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
 
+      - name: Cache Dependency-Check data
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DEPENDENCY_CHECK_DATA_DIR }}
+          key: dependency-check-${{ runner.os }}-${{ hashFiles('pom.xml', 'dependency-check-suppressions.xml') }}
+          restore-keys: |
+            dependency-check-${{ runner.os }}-
+
       - name: Run SCA
-        run: ./mvnw -B dependency-check:check
+        run: ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} dependency-check:check
 
       - name: Upload SCA report
         if: always()
