@@ -12,7 +12,7 @@
 - эндпоинт здоровья через Actuator
 - OpenAPI
 - Dockerfile
-- GitHub Actions с `build`, `test`, проверками безопасности, DAST и fuzzing
+- GitHub Actions с `build`, `test`, проверками безопасности, DAST, fuzzing и smoke-проверкой `docker compose`
 - полный `compose.yaml` для приложения, PostgreSQL, MinIO и генерации keystore
 - PowerShell-скрипт для keystore подписи
 - PowerShell-скрипт для HTTPS keystore
