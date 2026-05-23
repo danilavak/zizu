@@ -24,7 +24,6 @@ env:
   POSTGRES_CI_URL: jdbc:postgresql://localhost:5432/zizu_ci
   POSTGRES_CI_USERNAME: zizu
   POSTGRES_CI_PASSWORD: zizu
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   secret_scan:
