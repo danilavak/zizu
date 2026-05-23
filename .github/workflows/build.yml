@@ -14,13 +14,17 @@ permissions:
   security-events: write
   packages: write
 
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   JAVA_VERSION: "21"
   ARTIFACT_NAME: zizu-jar
-  H2_DB_URL: jdbc:h2:mem:zizu-ci;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
   POSTGRES_CI_URL: jdbc:postgresql://localhost:5432/zizu_ci
   POSTGRES_CI_USERNAME: zizu
   POSTGRES_CI_PASSWORD: zizu
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   secret_scan:
@@ -86,6 +90,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -106,6 +111,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -135,6 +141,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -184,6 +191,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -226,6 +234,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -315,6 +324,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -405,6 +415,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4

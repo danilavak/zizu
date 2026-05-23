@@ -1,6 +1,6 @@
 # Zizu
 
-`zizu` - репозиторий серверной части проекта по РБПО. Здесь лежит backend на Spring Boot, локальная инфраструктура и всё, что нужно для запуска сервера у себя на машине и на CI.
+`zizu` - репозиторий серверной части проекта по РБПО. Здесь лежит сервер на Spring Boot, локальная инфраструктура и задел под будущую клиентскую часть.
 
 ## Что уже есть
 
@@ -9,7 +9,7 @@
 - миграции Flyway
 - авторизация по JWT access/refresh с ротацией refresh-сессий
 - роли `ADMIN` и `USER`
-- endpoint здоровья через Actuator
+- эндпоинт здоровья через Actuator
 - OpenAPI
 - Dockerfile
 - GitHub Actions с `build`, `test`, проверками безопасности, DAST и fuzzing
@@ -93,9 +93,9 @@ docker compose down
 docker compose down -v
 ```
 
-## Локальный запуск через Java
+## Локальный запуск без Docker для приложения
 
-Если нужно запускать приложение не в контейнере, а локально:
+Если нужно запускать само приложение не в контейнере, а напрямую через Java:
 
 1. Скопировать `.env.example` в `.env`.
 2. Поднять только инфраструктуру:
@@ -122,7 +122,7 @@ docker compose up -d postgres minio minio-init
 ./mvnw.cmd spring-boot:run
 ```
 
-Полезные endpoint:
+Полезные эндпоинты:
 
 - `POST /auth/register`
 - `POST /auth/login`
