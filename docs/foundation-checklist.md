@@ -1,34 +1,34 @@
-# Foundation Checklist
+# Чеклист основы проекта
 
-The repository is ready for the implementation phase of the new project when the following baseline is in place:
+Репозиторий можно считать подготовленным к дальнейшей разработке, если на месте такие базовые вещи:
 
-- Security foundation:
-  - JWT access and refresh tokens
-  - refresh token rotation with persisted sessions
-  - `ADMIN` / `USER` role model
-  - typed authenticated principal from JWT
-- Infrastructure foundation:
-  - PostgreSQL runtime config
-  - Flyway baseline migration
+- Безопасность:
+  - JWT access и refresh
+  - ротация refresh-токенов с хранением сессий
+  - роли `ADMIN` / `USER`
+  - типизированный principal из JWT
+- Инфраструктура:
+  - конфигурация PostgreSQL
+  - стартовые миграции Flyway
   - Dockerfile
-  - `compose.yaml` with PostgreSQL and MinIO
+  - `compose.yaml` с PostgreSQL и MinIO
   - `.env.example`
-- Delivery foundation:
-  - GitHub Actions `build`, `test`, `secret_scan`, `container_scan`, `sast`, `sca`, `dast`, `fuzzing`
-- API foundation:
-  - unified JSON error format
-  - health endpoint
+- Сборка и проверки:
+  - GitHub Actions с `build`, `test`, `secret_scan`, `container_scan`, `sast`, `sca`, `dast`, `fuzzing`
+- API:
+  - единый JSON-формат ошибок
+  - endpoint здоровья
   - OpenAPI endpoint
-- Domain preparation:
-  - package roots for `license`, `signature`, `malware`, `binaryapi`
-  - `Ticket` and `TicketResponse` contracts
-  - signature keystore generation script
+- Подготовка доменной части:
+  - корневые пакеты `license`, `signature`, `malware`, `binaryapi`
+  - контракты `Ticket` и `TicketResponse`
+  - скрипт генерации keystore подписи
 
-## Recommended next implementation order
+## В каком порядке лучше развивать дальше
 
-1. License database schema and services.
-2. Signature keystore loading and signing service.
-3. Ticket signing for license responses.
-4. Malware signature schema, history and audit.
-5. Binary API manifest and multipart serialization.
-6. Optional file upload and MinIO integration.
+1. Схема БД и сервисы лицензий.
+2. Загрузка keystore и сервис подписи.
+3. Подпись `TicketResponse`.
+4. Схема сигнатур, история и аудит.
+5. Binary API, манифест и `multipart`.
+6. Загрузка файлов и интеграция с MinIO.

@@ -1,26 +1,26 @@
-# Task 6 Status
+# Статус задания 6
 
-The optional signature-files subsystem is implemented.
+Опциональная подсистема файлов сигнатур реализована.
 
-## Implemented
+## Что сделано
 
-- Added private object storage integration via MinIO.
-- Added a dedicated `signature_files` table for uploaded file metadata.
-- Added `POST /malware-signature-files/upload` for admin-only file upload and signature derivation.
-- Added `POST /malware-signature-files/presigned-urls` for admin-only presigned download URLs by signature IDs.
-- Added MinIO application-user bootstrap to `compose.yaml`.
+- добавлена интеграция с приватным object storage на базе MinIO
+- добавлена таблица `signature_files` для метаданных загруженных файлов
+- добавлен `POST /malware-signature-files/upload` для загрузки файла администратором и вычисления сигнатуры
+- добавлен `POST /malware-signature-files/presigned-urls` для выдачи presigned URL по списку `signatureId`
+- в `compose.yaml` добавлен bootstrap пользователя приложения для MinIO
 
-## Current derivation strategy
+## Текущая стратегия вычисления сигнатуры
 
-- `firstBytesHex`: first `N` bytes of the uploaded file, where `N` is `SIGNATURE_FILE_FIRST_BYTES_COUNT` and defaults to `16`.
-- `remainderHashHex`: `SHA-256` of the remaining bytes.
-- `remainderLength`: number of bytes after the first window.
-- `fileType`: lower-case file extension, or `bin` if missing.
+- `firstBytesHex`: первые `N` байт файла, где `N` берётся из `SIGNATURE_FILE_FIRST_BYTES_COUNT` и по умолчанию равен `16`
+- `remainderHashHex`: `SHA-256` от оставшейся части файла
+- `remainderLength`: количество байт после первого окна
+- `fileType`: расширение файла в нижнем регистре или `bin`, если расширения нет
 - `offsetStart`: `0`
 - `offsetEnd`: `firstBytesLength - 1`
 
-## Notes
+## Замечания
 
-- Uploaded source files are stored in a private MinIO bucket with a non-root application user.
-- Presigned URLs are generated only for signatures that have an uploaded source file.
-- Empty files are rejected because the current signature derivation requires a non-empty first-byte window.
+- исходные файлы хранятся в приватном bucket MinIO под отдельным пользователем приложения, не под root
+- presigned URL выдаются только для сигнатур, у которых есть загруженный исходный файл
+- пустые файлы отклоняются, потому что текущий алгоритм требует непустое первое окно байт

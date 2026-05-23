@@ -1,8 +1,8 @@
-# GitHub Secrets
+# Секреты GitHub
 
-Recommended repository secrets and variables for `zizu`:
+Ниже список секретов и переменных, которые нужны репозиторию `zizu`.
 
-## Application secrets
+## Секреты приложения
 
 - `DB_URL`
 - `DB_USERNAME`
@@ -12,7 +12,7 @@ Recommended repository secrets and variables for `zizu`:
 - `APP_ADMIN_EMAIL`
 - `APP_ADMIN_PASSWORD`
 
-## HTTPS secrets
+## Секреты для HTTPS
 
 - `SERVER_SSL_ENABLED`
 - `SERVER_SSL_KEY_STORE`
@@ -20,7 +20,7 @@ Recommended repository secrets and variables for `zizu`:
 - `SERVER_SSL_KEY_STORE_TYPE`
 - `SERVER_SSL_KEY_ALIAS`
 
-## Signature module secrets
+## Секреты для модуля подписи
 
 - `SIGNATURE_KEYSTORE_BASE64`
 - `SIGNATURE_KEYSTORE_LOCATION`
@@ -29,22 +29,22 @@ Recommended repository secrets and variables for `zizu`:
 - `SIGNATURE_KEY_ALIAS`
 - `SIGNATURE_KEY_PASSWORD`
 
-Recommended approach:
+Рекомендуемый вариант:
 
-- store the PKCS12 keystore in `SIGNATURE_KEYSTORE_BASE64`;
-- set `SIGNATURE_KEYSTORE_TYPE=PKCS12`;
-- keep alias and passwords in separate secrets.
-- for PKCS12, use the same value for `SIGNATURE_KEYSTORE_PASSWORD` and `SIGNATURE_KEY_PASSWORD`.
+- хранить PKCS12 keystore в `SIGNATURE_KEYSTORE_BASE64`;
+- `SIGNATURE_KEYSTORE_TYPE` ставить в `PKCS12`;
+- alias и пароли хранить отдельными секретами;
+- для PKCS12 использовать одинаковое значение в `SIGNATURE_KEYSTORE_PASSWORD` и `SIGNATURE_KEY_PASSWORD`.
 
-Fallback approach:
+Запасной вариант:
 
-- keep the keystore outside the repository and inject `SIGNATURE_KEYSTORE_LOCATION` with a runner-local path.
+- хранить keystore вне репозитория и передавать путь через `SIGNATURE_KEYSTORE_LOCATION` на runner.
 
-## Container registry
+## Публикация контейнера
 
-The workflow already uses the default `GITHUB_TOKEN` for `ghcr.io` publication.
+Workflow уже использует стандартный `GITHUB_TOKEN` для публикации в `ghcr.io`.
 
-## MinIO / object storage secrets
+## Секреты для MinIO
 
 - `MINIO_ENDPOINT`
 - `MINIO_ACCESS_KEY`

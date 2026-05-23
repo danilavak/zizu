@@ -1,13 +1,13 @@
-# Windows Client
+# Windows-клиент
 
-This directory is reserved for the Windows client part of the RBPO system shown in the architecture diagram.
+Эта папка зарезервирована под Windows-клиент из общей схемы проекта.
 
-Planned scope:
+Что здесь будет дальше:
 
-- tray application for Windows
-- authentication and license client module
-- update module for manifest verification and download
-- local signature storage
-- future integration with the server from the repository root
+- tray-приложение для Windows
+- клиентский модуль авторизации и лицензии
+- модуль обновления баз с проверкой манифеста
+- локальное хранилище сигнатур
+- интеграция с сервером из корня репозитория
 
-The client will be implemented as an isolated subproject with its own build pipeline and pull requests that touch only `windows-client/**`.
+Клиент будет развиваться как отдельный подпроект. Изменения по нему должны лежать только в `windows-client/**` и связанных workflow.
