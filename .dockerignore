@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.vscode
+target
+reports
+data
+secrets
+.env
+*.p12
+*.jks
+*.cer
+*.log
