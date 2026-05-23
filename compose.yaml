@@ -8,42 +8,43 @@ services:
       SIGNATURE_KEY_PASSWORD: ${SIGNATURE_KEY_PASSWORD:-changeit}
       SERVER_SSL_KEY_ALIAS: ${SERVER_SSL_KEY_ALIAS:-zizu-https}
       SERVER_SSL_KEY_STORE_PASSWORD: ${SERVER_SSL_KEY_STORE_PASSWORD:-changeit}
-    entrypoint: >
-      /bin/sh -c "
-      mkdir -p /keystores;
-      if [ ! -f /keystores/signature-keystore.p12 ]; then
-        keytool -genkeypair \
-        -alias $${SIGNATURE_KEY_ALIAS} \
-        -keyalg RSA \
-        -keysize 2048 \
-        -sigalg SHA256withRSA \
-        -validity 3650 \
-        -storetype PKCS12 \
-        -keystore /keystores/signature-keystore.p12 \
-        -storepass $${SIGNATURE_KEYSTORE_PASSWORD} \
-        -keypass $${SIGNATURE_KEY_PASSWORD} \
-        -dname 'CN=Zizu Signature, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU';
-        keytool -exportcert \
-        -alias $${SIGNATURE_KEY_ALIAS} \
-        -keystore /keystores/signature-keystore.p12 \
-        -storepass $${SIGNATURE_KEYSTORE_PASSWORD} \
-        -rfc \
-        -file /keystores/signature-public.cer;
-      fi;
-      if [ ! -f /keystores/https-keystore.p12 ]; then
-        keytool -genkeypair \
-        -alias $${SERVER_SSL_KEY_ALIAS} \
-        -keyalg RSA \
-        -keysize 2048 \
-        -validity 3650 \
-        -storetype PKCS12 \
-        -keystore /keystores/https-keystore.p12 \
-        -storepass $${SERVER_SSL_KEY_STORE_PASSWORD} \
-        -keypass $${SERVER_SSL_KEY_STORE_PASSWORD} \
-        -dname 'CN=localhost, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU' \
-        -ext SAN=dns:localhost,ip:127.0.0.1;
-      fi
-      "
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /keystores
+        if [ ! -f /keystores/signature-keystore.p12 ]; then
+          keytool -genkeypair \
+            -alias "$${SIGNATURE_KEY_ALIAS}" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -sigalg SHA256withRSA \
+            -validity 3650 \
+            -storetype PKCS12 \
+            -keystore /keystores/signature-keystore.p12 \
+            -storepass "$${SIGNATURE_KEYSTORE_PASSWORD}" \
+            -keypass "$${SIGNATURE_KEY_PASSWORD}" \
+            -dname "CN=Zizu Signature, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU"
+          keytool -exportcert \
+            -alias "$${SIGNATURE_KEY_ALIAS}" \
+            -keystore /keystores/signature-keystore.p12 \
+            -storepass "$${SIGNATURE_KEYSTORE_PASSWORD}" \
+            -rfc \
+            -file /keystores/signature-public.cer
+        fi
+        if [ ! -f /keystores/https-keystore.p12 ]; then
+          keytool -genkeypair \
+            -alias "$${SERVER_SSL_KEY_ALIAS}" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 3650 \
+            -storetype PKCS12 \
+            -keystore /keystores/https-keystore.p12 \
+            -storepass "$${SERVER_SSL_KEY_STORE_PASSWORD}" \
+            -keypass "$${SERVER_SSL_KEY_STORE_PASSWORD}" \
+            -dname "CN=localhost, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU" \
+            -ext SAN=dns:localhost,ip:127.0.0.1
+        fi
     volumes:
       - keystore-data:/keystores
 
