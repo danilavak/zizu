@@ -42,3 +42,7 @@ secrets/
 *.p12
 *.jks
 *.cer
+windows-client/packages/
+windows-client/x64/
+windows-client/Debug/
+windows-client/Release/

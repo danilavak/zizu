@@ -1,13 +1,22 @@
-# Windows-клиент
+# Клиентская часть
 
-Эта папка зарезервирована под Windows-клиент из общей схемы проекта.
+Здесь лежит отдельный Windows-клиент, который соответствует нижней части общей схемы и не смешивается с серверным кодом.
 
-Что здесь будет дальше:
+Текущий стек:
 
-- tray-приложение для Windows
-- клиентский модуль авторизации и лицензии
-- модуль обновления баз с проверкой манифеста
-- локальное хранилище сигнатур
-- интеграция с сервером из корня репозитория
+- `C++`
+- `WinUI 3`
+- `MSBuild` на конвейере
 
-Клиент будет развиваться как отдельный подпроект. Изменения по нему должны лежать только в `windows-client/**` и связанных workflow.
+Локальная сборка в Visual Studio:
+
+```powershell
+nuget restore .\windows-client\packages.config -PackagesDirectory .\windows-client\packages
+msbuild .\windows-client\zizu-windows-client.vcxproj /p:Configuration=Release /p:Platform=x64
+```
+
+Скрытый запуск:
+
+```powershell
+.\windows-client\x64\Release\ZizuWindowsClient.exe --hidden
+```
