@@ -72,7 +72,7 @@ namespace winrt::ZizuWindowsClient::implementation
     {
         if (m_hwnd == nullptr)
         {
-            auto window = *this;
+            winrt::Microsoft::UI::Xaml::Window window = *this;
             window.as<IWindowNative>()->get_WindowHandle(&m_hwnd);
         }
         return m_hwnd;

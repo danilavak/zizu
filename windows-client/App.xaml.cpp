@@ -39,8 +39,8 @@ namespace winrt::ZizuWindowsClient::implementation
             ExitProcess(0);
         }
 
-        auto window = winrt::make<MainWindow>();
-        window.InitializeWindow(hasHiddenLaunchArgument());
+        auto window = winrt::make<winrt::ZizuWindowsClient::implementation::MainWindow>();
+        winrt::get_self<winrt::ZizuWindowsClient::implementation::MainWindow>(window)->InitializeWindow(hasHiddenLaunchArgument());
         m_window = window;
     }
 
