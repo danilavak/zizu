@@ -1,0 +1,26 @@
+<Window
+    x:Class="ZizuWindowsClient.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <MenuBar Grid.Row="0">
+            <MenuBarItem Title="Файл">
+                <MenuFlyoutItem Text="Выход" Click="OnExitMenuItemClick" />
+            </MenuBarItem>
+        </MenuBar>
+
+        <StackPanel Grid.Row="1" Spacing="16" Padding="24">
+            <TextBlock Text="Клиент Zizu" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="Приложение работает через значок в трее. Закрытие окна не завершает процесс." TextWrapping="WrapWholeWords" />
+            <TextBlock x:Name="StatusTextBlock" Text="Окно активно." />
+        </StackPanel>
+    </Grid>
+</Window>

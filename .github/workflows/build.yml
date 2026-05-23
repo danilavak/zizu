@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - windows-client/**
+      - .github/workflows/windows-client.yml
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - windows-client/**
+      - .github/workflows/windows-client.yml
   workflow_dispatch:
 
 permissions:
