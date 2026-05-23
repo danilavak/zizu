@@ -33,10 +33,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up CMake
-        uses: jwlawson/actions-setup-cmake@v2
-        with:
-          cmake-version: "3.31.6"
+      - name: Show CMake version
+        run: cmake --version
 
       - name: Configure
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
