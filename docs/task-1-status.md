@@ -1,32 +1,32 @@
-# Task 1 Status
+# Статус задания 1
 
-This document maps task 1 requirements to the `zizu` repository state.
+Здесь зафиксировано, как требования первого задания закрыты в репозитории `zizu`.
 
-## 1. Git repository for the server part
+## 1. Git-репозиторий для серверной части
 
-Done:
+Сделано:
 
-- Local Git repository created in `C:\Users\danil\Documents\zizu`
-- GitHub repository created: `danilavak/zizu`
+- локальный репозиторий создан в `C:\Users\danil\Documents\zizu`
+- GitHub-репозиторий создан: `danilavak/zizu`
 
-## 2. Transfer authentication, authorization, HTTPS, PostgreSQL
+## 2. Перенос аутентификации, авторизации, HTTPS и PostgreSQL
 
-Done:
+Сделано:
 
-- JWT access/refresh authentication with refresh rotation
-- Role-based authorization with `ADMIN` and `USER`
-- PostgreSQL runtime configuration
-- Flyway baseline migration
-- HTTPS configuration through `server.ssl.*`
-- HTTPS keystore generation script: `scripts/create-https-keystore.ps1`
+- авторизация по JWT access/refresh с ротацией refresh-сессий
+- ролевая модель `ADMIN` и `USER`
+- конфигурация PostgreSQL
+- стартовая миграция Flyway
+- конфигурация HTTPS через `server.ssl.*`
+- скрипт генерации HTTPS keystore: `scripts/create-https-keystore.ps1`
 
-## 3. Transfer variables and secrets or create new ones
+## 3. Переменные и секреты
 
-Done:
+Сделано:
 
-- `.env.example` created for local runtime
-- `docs/github-secrets.md` created
-- Initial GitHub repository secrets created for:
+- создан `.env.example` для локального запуска
+- создан файл `docs/github-secrets.md`
+- подготовлен стартовый набор секретов репозитория для:
   - `DB_URL`
   - `DB_USERNAME`
   - `DB_PASSWORD`
@@ -39,22 +39,22 @@ Done:
   - `SERVER_SSL_ENABLED`
   - `SERVER_SSL_KEY_STORE_TYPE`
 
-## 4. Transfer pipeline with test and build
+## 4. Pipeline с шагами test и build
 
-Done:
+Сделано:
 
-- GitHub Actions workflow present in `.github/workflows/build.yml`
-- Separate `test` and `build` jobs
-- Additional security and verification jobs kept from the study project
+- workflow GitHub Actions лежит в `.github/workflows/build.yml`
+- `test` и `build` вынесены в отдельные job
+- дополнительно оставлены security-проверки из учебного проекта
 
-## 5. Study UML diagrams theory
+## 5. Теория по UML
 
-Done:
+Сделано:
 
-- Summary note added: `docs/uml-er-primer.md`
+- добавлена краткая памятка `docs/uml-er-primer.md`
 
-## 6. Study ER diagrams theory
+## 6. Теория по ER
 
-Done:
+Сделано:
 
-- Summary note added: `docs/uml-er-primer.md`
+- добавлена краткая памятка `docs/uml-er-primer.md`

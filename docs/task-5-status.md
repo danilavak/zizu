@@ -1,33 +1,33 @@
-# Task 5 Status
+# Статус задания 5
 
-Task 5 binary API is implemented in the `zizu` repository.
+Пятое задание по binary API реализовано в репозитории `zizu`.
 
-Completed:
+Сделано:
 
-- Added a dedicated transport controller under `/api/binary/signatures`.
-- Implemented binary endpoints:
+- добавлен отдельный контроллер транспорта по пути `/api/binary/signatures`
+- реализованы binary endpoint:
   - `GET /api/binary/signatures/full`
   - `GET /api/binary/signatures/increment?since=...`
   - `POST /api/binary/signatures/by-ids`
-- Added multipart/mixed responses with stable order:
+- реализован ответ `multipart/mixed` со стабильным порядком частей:
   - `manifest.bin`
   - `data.bin`
-- Added low-level BigEndian binary serialization helpers for:
+- добавлены низкоуровневые помощники бинарной сериализации для:
   - `uint8`
   - `uint16`
   - `uint32`
   - `int64`
   - UUID
-  - UTF-8 strings
-  - byte arrays
-- Added manifest signing over raw bytes through the signature module.
-- Included manifest signature, existing record signatures, offsets, lengths, status codes, and `data.bin` SHA-256.
-- Added integration tests for multipart parsing, manifest verification, full export, increment export, and by-ids export.
+  - UTF-8 строк
+  - массивов байт
+- подпись манифеста по сырым байтам добавлена через модуль подписи
+- в манифест включены подпись, подписи записей, offsets, lengths, статус-коды и `SHA-256` от `data.bin`
+- добавлены интеграционные тесты на multipart-разбор, проверку манифеста, полную выгрузку, increment и by-ids
 
-Protocol choices:
+Принятые решения по протоколу:
 
-- Magic headers are ASCII:
-  - `MF-VAK` for `manifest.bin`
-  - `DB-VAK` for `data.bin`
-- Multi-byte numeric fields are serialized in BigEndian.
-- UUID values are serialized as two 64-bit parts: most significant bits first, then least significant bits.
+- сигнатуры заголовков в ASCII:
+  - `MF-VAK` для `manifest.bin`
+  - `DB-VAK` для `data.bin`
+- многобайтные числа сериализуются в Big Endian
+- UUID сериализуется как две 64-битные части: сначала старшие биты, потом младшие

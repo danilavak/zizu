@@ -1,55 +1,55 @@
-# UML and ER Primer
+# Кратко по UML и ER
 
-This note closes the theory part of task 1 and gives a compact reference for the diagrams that will be used in the next stages of the project.
+Эта памятка закрывает теоретическую часть первого задания и даёт короткую опору по диаграммам, которые нужны дальше по проекту.
 
-## UML diagrams
+## UML-диаграммы
 
-UML diagrams are split into two large groups:
+UML-диаграммы обычно делят на две большие группы:
 
-- Structural diagrams: show what the system consists of.
-- Behavioral diagrams: show how the system behaves over time.
+- структурные - показывают, из чего состоит система
+- поведенческие - показывают, как система ведёт себя во времени
 
-### Structural UML diagrams
+### Структурные UML-диаграммы
 
-- Class diagram: classes, fields, methods, inheritance, associations.
-- Component diagram: large modules and their dependencies.
-- Deployment diagram: nodes, servers, containers, external systems.
-- Package diagram: logical grouping of code and dependencies between groups.
+- диаграмма классов: классы, поля, методы, наследование, связи
+- диаграмма компонентов: крупные модули и зависимости между ними
+- диаграмма развёртывания: узлы, серверы, контейнеры, внешние системы
+- диаграмма пакетов: логическая группировка кода и зависимости между группами
 
-### Behavioral UML diagrams
+### Поведенческие UML-диаграммы
 
-- Use case diagram: actors and high-level system capabilities.
-- Sequence diagram: order of calls between participants over time.
-- Activity diagram: flow of actions, branches and parallel steps.
-- State diagram: state transitions of a business entity.
+- диаграмма вариантов использования: акторы и верхнеуровневые возможности системы
+- диаграмма последовательности: порядок вызовов между участниками во времени
+- диаграмма активности: поток действий, ветвления и параллельные шаги
+- диаграмма состояний: переходы состояний бизнес-сущности
 
-## Why they matter for this project
+## Зачем это нужно в нашем проекте
 
-- Sequence diagrams will drive license operations and binary API flows.
-- Class and package diagrams help keep the server architecture clean.
-- State diagrams are useful for license status and malware signature lifecycle.
-- Deployment and component diagrams help describe PostgreSQL, MinIO, CI/CD and service boundaries.
+- диаграммы последовательности задают логику операций лицензий и binary API
+- диаграммы классов и пакетов помогают держать серверную архитектуру в порядке
+- диаграммы состояний полезны для жизненного цикла лицензий и сигнатур
+- диаграммы развёртывания и компонентов помогают описать PostgreSQL, MinIO, CI/CD и границы сервисов
 
-## ER diagrams
+## ER-диаграммы
 
-ER diagrams describe the relational data model:
+ER-диаграммы описывают реляционную модель данных:
 
-- Entities: future database tables.
-- Attributes: columns.
-- Relationships: links between entities.
-- Cardinality: `1:1`, `1:N`, `N:M`.
-- Optionality: whether a relationship is required or optional.
+- сущности - будущие таблицы базы данных
+- атрибуты - столбцы
+- связи - отношения между сущностями
+- кратность - `1:1`, `1:N`, `N:M`
+- обязательность - связь обязательная или необязательная
 
-## Why ER matters for this project
+## Зачем ER нужны здесь
 
-- License management is built around a relational schema with users, licenses, devices and history.
-- Malware signatures require a clear model for current records, history and audit.
-- Binary export depends on stable persisted records and timestamps.
+- лицензирование строится вокруг реляционной схемы с пользователями, лицензиями, устройствами и историей
+- для сигнатур нужен чёткий набор таблиц под актуальные записи, историю и аудит
+- binary export опирается на стабильные записи в БД и временные метки
 
-## Practical rule for implementation
+## Практическое правило
 
-Before implementing a module:
+Перед реализацией любого модуля:
 
-1. Read the ER diagram to define tables and constraints.
-2. Read the sequence diagram to define service methods and transaction boundaries.
-3. Only then implement controllers, services, repositories and migrations.
+1. Сначала читать ER-диаграмму и определять таблицы и ограничения.
+2. Потом читать диаграмму последовательности и определять методы сервиса и границы транзакций.
+3. И только после этого писать контроллеры, сервисы, репозитории и миграции.

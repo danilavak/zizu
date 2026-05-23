@@ -1,7 +1,57 @@
 services:
+  keystore-init:
+    image: eclipse-temurin:21-jdk
+    container_name: zizu-keystore-init
+    environment:
+      SIGNATURE_KEY_ALIAS: ${SIGNATURE_KEY_ALIAS:-signature-key}
+      SIGNATURE_KEYSTORE_PASSWORD: ${SIGNATURE_KEYSTORE_PASSWORD:-changeit}
+      SIGNATURE_KEY_PASSWORD: ${SIGNATURE_KEY_PASSWORD:-changeit}
+      SERVER_SSL_KEY_ALIAS: ${SERVER_SSL_KEY_ALIAS:-zizu-https}
+      SERVER_SSL_KEY_STORE_PASSWORD: ${SERVER_SSL_KEY_STORE_PASSWORD:-changeit}
+    entrypoint:
+      - /bin/sh
+      - -ec
+      - |
+        mkdir -p /keystores
+        if [ ! -f /keystores/signature-keystore.p12 ]; then
+          keytool -genkeypair \
+            -alias "$${SIGNATURE_KEY_ALIAS}" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -sigalg SHA256withRSA \
+            -validity 3650 \
+            -storetype PKCS12 \
+            -keystore /keystores/signature-keystore.p12 \
+            -storepass "$${SIGNATURE_KEYSTORE_PASSWORD}" \
+            -keypass "$${SIGNATURE_KEY_PASSWORD}" \
+            -dname "CN=Zizu Signature, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU"
+          keytool -exportcert \
+            -alias "$${SIGNATURE_KEY_ALIAS}" \
+            -keystore /keystores/signature-keystore.p12 \
+            -storepass "$${SIGNATURE_KEYSTORE_PASSWORD}" \
+            -rfc \
+            -file /keystores/signature-public.cer
+        fi
+        if [ ! -f /keystores/https-keystore.p12 ]; then
+          keytool -genkeypair \
+            -alias "$${SERVER_SSL_KEY_ALIAS}" \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 3650 \
+            -storetype PKCS12 \
+            -keystore /keystores/https-keystore.p12 \
+            -storepass "$${SERVER_SSL_KEY_STORE_PASSWORD}" \
+            -keypass "$${SERVER_SSL_KEY_STORE_PASSWORD}" \
+            -dname "CN=localhost, OU=RBPO, O=danilavak, L=Moscow, ST=Moscow, C=RU" \
+            -ext SAN=dns:localhost,ip:127.0.0.1
+        fi
+    volumes:
+      - keystore-data:/keystores
+
   postgres:
     image: postgres:16
     container_name: zizu-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-zizu}
       POSTGRES_USER: ${POSTGRES_USER:-zizu}
@@ -17,8 +67,9 @@ services:
       retries: 10
 
   minio:
-    image: minio/minio:RELEASE.2026-05-12T02-30-09Z
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z-cpuv1
     container_name: zizu-minio
+    restart: unless-stopped
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-zizu-root}
@@ -30,7 +81,7 @@ services:
       - minio-data:/data
 
   minio-init:
-    image: minio/mc:RELEASE.2026-05-21T01-59-54Z
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
     container_name: zizu-minio-init
     depends_on:
       - minio
@@ -49,6 +100,56 @@ services:
       exit 0;
       "
 
+  app:
+    build:
+      context: .
+    image: zizu-app:local
+    container_name: zizu-app
+    restart: unless-stopped
+    depends_on:
+      keystore-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      SERVER_PORT: ${SERVER_PORT:-8080}
+      DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-zizu}
+      DB_USERNAME: ${POSTGRES_USER:-zizu}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-zizu}
+      DB_DRIVER: org.postgresql.Driver
+      JWT_SECRET: ${JWT_SECRET:-zizu-secret-key-zizu-secret-key-2026}
+      JWT_ACCESS_TOKEN_MINUTES: ${JWT_ACCESS_TOKEN_MINUTES:-15}
+      JWT_REFRESH_TOKEN_DAYS: ${JWT_REFRESH_TOKEN_DAYS:-7}
+      APP_ADMIN_USERNAME: ${APP_ADMIN_USERNAME:-admin}
+      APP_ADMIN_EMAIL: ${APP_ADMIN_EMAIL:-admin@example.com}
+      APP_ADMIN_PASSWORD: ${APP_ADMIN_PASSWORD:-Admin!234}
+      SERVER_SSL_ENABLED: ${SERVER_SSL_ENABLED:-false}
+      SERVER_SSL_KEY_STORE: file:/run/secrets/local/https-keystore.p12
+      SERVER_SSL_KEY_STORE_PASSWORD: ${SERVER_SSL_KEY_STORE_PASSWORD:-changeit}
+      SERVER_SSL_KEY_STORE_TYPE: ${SERVER_SSL_KEY_STORE_TYPE:-PKCS12}
+      SERVER_SSL_KEY_ALIAS: ${SERVER_SSL_KEY_ALIAS:-zizu-https}
+      SIGNATURE_KEYSTORE_LOCATION: file:/run/secrets/local/signature-keystore.p12
+      SIGNATURE_KEYSTORE_TYPE: ${SIGNATURE_KEYSTORE_TYPE:-PKCS12}
+      SIGNATURE_KEYSTORE_PASSWORD: ${SIGNATURE_KEYSTORE_PASSWORD:-changeit}
+      SIGNATURE_KEY_ALIAS: ${SIGNATURE_KEY_ALIAS:-signature-key}
+      SIGNATURE_KEY_PASSWORD: ${SIGNATURE_KEY_PASSWORD:-changeit}
+      BINARY_API_STUDENT_SURNAME: ${BINARY_API_STUDENT_SURNAME:-VAK}
+      BINARY_API_VERSION: ${BINARY_API_VERSION:-1}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-zizu-app}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-zizu-app-secret}
+      MINIO_BUCKET: ${MINIO_BUCKET:-signature-files}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_PRESIGNED_EXPIRY_MINUTES: ${MINIO_PRESIGNED_EXPIRY_MINUTES:-30}
+      SIGNATURE_FILE_FIRST_BYTES_COUNT: ${SIGNATURE_FILE_FIRST_BYTES_COUNT:-16}
+    ports:
+      - "${APP_PORT:-8080}:${SERVER_PORT:-8080}"
+    volumes:
+      - keystore-data:/run/secrets/local:ro
+
 volumes:
   postgres-data:
   minio-data:
+  keystore-data:

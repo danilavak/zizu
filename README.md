@@ -1,28 +1,33 @@
-# Zizu Foundation
+# Zizu
 
-`zizu` is the local and GitHub foundation for the new RBPO server project. The repository is prepared for the next implementation phase: licensing, digital signatures, malware signatures, binary API, and optional MinIO integration.
+`zizu` - репозиторий серверной части проекта по РБПО. Здесь лежит сервер на Spring Boot, локальная инфраструктура и задел под будущую клиентскую часть.
 
-## Included foundation
+## Что уже есть
 
-- Spring Boot 3.5 / Java 21 / Maven wrapper
-- PostgreSQL-ready configuration
-- Flyway migrations
-- JWT access/refresh authentication with refresh session rotation
-- Role-based authorization with `ADMIN` and `USER`
-- Actuator health endpoint
-- OpenAPI endpoint
-- Docker build
-- GitHub Actions pipeline with build, tests, scans, DAST and fuzzing
-- `compose.yaml` for PostgreSQL and MinIO
-- PowerShell script for signature keystore generation
-- PowerShell script for HTTPS keystore generation
-- Unified API error format
-- Typed JWT principal for future domain modules
-- Ready `Ticket` and `TicketResponse` contracts
+- Spring Boot 3.5 / Java 21 / Maven Wrapper
+- конфигурация для PostgreSQL
+- миграции Flyway
+- авторизация по JWT access/refresh с ротацией refresh-сессий
+- роли `ADMIN` и `USER`
+- эндпоинт здоровья через Actuator
+- OpenAPI
+- Dockerfile
+- GitHub Actions с `build`, `test`, проверками безопасности, DAST, fuzzing и smoke-проверкой `docker compose`
+- полный `compose.yaml` для приложения, PostgreSQL, MinIO и генерации keystore
+- PowerShell-скрипт для keystore подписи
+- PowerShell-скрипт для HTTPS keystore
+- единый формат ошибок API
+- типизированный JWT principal
+- контракты `Ticket` и `TicketResponse`
 
-## Environment variables
+## Структура репозитория
 
-Core runtime:
+- корень репозитория: сервер, инфраструктура, CI и Docker-стек
+- `windows-client/`: будущий Windows-клиент в рамках этого же репозитория
+
+## Переменные окружения
+
+Основные:
 
 - `DB_URL`
 - `DB_USERNAME`
@@ -31,7 +36,7 @@ Core runtime:
 - `JWT_ACCESS_TOKEN_MINUTES`
 - `JWT_REFRESH_TOKEN_DAYS`
 
-HTTPS:
+Для HTTPS:
 
 - `SERVER_SSL_ENABLED`
 - `SERVER_SSL_KEY_STORE`
@@ -39,48 +44,85 @@ HTTPS:
 - `SERVER_SSL_KEY_STORE_TYPE`
 - `SERVER_SSL_KEY_ALIAS`
 
-Signature module preparation:
+Для модуля подписи:
 
 - `SIGNATURE_KEYSTORE_LOCATION`
 - `SIGNATURE_KEYSTORE_PASSWORD`
 - `SIGNATURE_KEY_ALIAS`
 - `SIGNATURE_KEY_PASSWORD`
 
-Bootstrap admin account:
+Для стартового администратора:
 
 - `APP_ADMIN_USERNAME`
 - `APP_ADMIN_EMAIL`
 - `APP_ADMIN_PASSWORD`
 
-## Local run
+## Запуск через Docker
 
-Copy `.env.example` to `.env` and adjust values if needed.
-
-For local infrastructure:
+1. Скопировать `.env.example` в `.env`.
+2. При необходимости поменять значения в `.env`.
+3. Выполнить:
 
 ```powershell
-docker compose up -d
+docker compose up -d --build
 ```
 
-For signature keystore bootstrap:
+Что поднимется:
+
+- PostgreSQL в контейнере
+- MinIO в контейнере
+- `minio-init`, который создаёт приватный bucket и пользователя приложения
+- `keystore-init`, который создаёт dev-keystore в Docker volume
+- само приложение `zizu`
+
+Полезные адреса после запуска:
+
+- `http://localhost:8080/actuator/health`
+- `http://localhost:8080/v3/api-docs`
+- `http://localhost:9001` - консоль MinIO
+
+Остановить стек:
+
+```powershell
+docker compose down
+```
+
+Удалить стек вместе с данными и keystore:
+
+```powershell
+docker compose down -v
+```
+
+## Локальный запуск без Docker для приложения
+
+Если нужно запускать само приложение не в контейнере, а напрямую через Java:
+
+1. Скопировать `.env.example` в `.env`.
+2. Поднять только инфраструктуру:
+
+```powershell
+docker compose up -d postgres minio minio-init
+```
+
+3. Создать keystore подписи:
 
 ```powershell
 .\scripts\create-signature-keystore.ps1
 ```
 
-For HTTPS bootstrap:
+4. Создать HTTPS keystore:
 
 ```powershell
 .\scripts\create-https-keystore.ps1
 ```
 
-Then run:
+5. Запустить приложение:
 
 ```powershell
 ./mvnw.cmd spring-boot:run
 ```
 
-Useful endpoints:
+Полезные эндпоинты:
 
 - `POST /auth/register`
 - `POST /auth/login`
@@ -89,12 +131,8 @@ Useful endpoints:
 - `GET /actuator/health`
 - `GET /v3/api-docs`
 
-## What comes next
+Дополнительные документы:
 
-The repository is intentionally trimmed to infrastructure and implementation contracts. Full business modules for licenses, signatures, binary export, and file storage are still to be implemented, but the repository already contains the runtime, CI, local infra, API conventions, and domain entry points needed to start them directly.
-
-Supporting docs:
-
-- [Foundation checklist](docs/foundation-checklist.md)
-- [GitHub secrets](docs/github-secrets.md)
-- [UML and ER primer](docs/uml-er-primer.md)
+- [Чеклист основы проекта](docs/foundation-checklist.md)
+- [Секреты GitHub](docs/github-secrets.md)
+- [Кратко по UML и ER](docs/uml-er-primer.md)

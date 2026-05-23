@@ -1,21 +1,21 @@
-# Task 4 Status
+# Статус задания 4
 
-Task 4 malware signature management is implemented in the `zizu` repository.
+Четвёртое задание по управлению антивирусными сигнатурами реализовано в репозитории `zizu`.
 
-Completed:
+Сделано:
 
-- Added PostgreSQL/H2-compatible schema for `signatures`, `signatures_history`, and `signatures_audit`.
-- Implemented all 8 required operations:
-  - full export
-  - increment export
-  - fetch by UUID list
-  - create
-  - update
-  - logical delete
-  - history by signature id
-  - audit by signature id
-- Integrated the signature module so current signature records are signed with `SHA256withRSA`.
-- Preserved previous versions in history before update and delete.
-- Added audit records for create, update, and delete.
-- Enforced `ADMIN`/`USER` access rules according to the task requirements.
-- Added integration coverage for lifecycle, history, audit, soft delete, increment, and access control.
+- добавлена схема `signatures`, `signatures_history` и `signatures_audit`, совместимая с PostgreSQL и H2
+- реализованы все 8 обязательных операций:
+  - полная выгрузка
+  - инкрементальная выгрузка
+  - получение по списку UUID
+  - создание
+  - обновление
+  - логическое удаление
+  - история по `signatureId`
+  - аудит по `signatureId`
+- модуль подписи подключён, актуальные записи подписываются через `SHA256withRSA`
+- перед `update` и `delete` предыдущая версия сохраняется в history
+- для `create`, `update` и `delete` пишутся записи аудита
+- права `ADMIN`/`USER` настроены по требованиям задания
+- добавлены интеграционные тесты на жизненный цикл записи, history, audit, soft delete, increment и контроль доступа

@@ -1,20 +1,20 @@
-# Task 3 Status
+# Статус задания 3
 
-Task 3 foundation is implemented in the `zizu` repository.
+Третье задание по модулю ЭЦП реализовано в репозитории `zizu`.
 
-Completed:
+Сделано:
 
-- Added a keystore-backed signature module with cached key loading from either `SIGNATURE_KEYSTORE_BASE64` or `SIGNATURE_KEYSTORE_LOCATION`.
-- Added deterministic JSON canonicalization for signed DTO payloads.
-- Implemented `SHA256withRSA` signing and verification with Base64 output.
-- Integrated ticket signing into the license module so `TicketResponse.signature` is now populated.
-- Added a public certificate endpoint: `GET /signature/certificate`.
-- Generated a local development keystore under the ignored `secrets/` directory.
-- Synced signature keystore secrets to GitHub repository `danilavak/zizu`.
-- Added integration tests for sign/verify behavior and certificate exposure.
+- добавлен модуль подписи на базе keystore с загрузкой ключей через `SIGNATURE_KEYSTORE_BASE64` или `SIGNATURE_KEYSTORE_LOCATION`
+- добавлена детерминированная каноникализация JSON перед подписью
+- реализованы подпись и проверка на `SHA256withRSA` с выдачей в Base64
+- подпись тикета встроена в модуль лицензий, поле `TicketResponse.signature` теперь заполняется
+- добавлен endpoint публичного сертификата: `GET /signature/certificate`
+- локальный dev-keystore создаётся в игнорируемой папке `secrets/`
+- секреты модуля подписи синхронизированы с репозиторием `danilavak/zizu`
+- добавлены интеграционные тесты на подпись, проверку и выдачу сертификата
 
-Runtime notes:
+Замечания по запуску:
 
-- For PKCS12 keystores, keep key password equal to store password.
-- Local development secrets are stored only in the ignored `secrets/` directory.
-- Clients must verify signatures over the same canonical JSON representation as the server.
+- для PKCS12 лучше использовать одинаковый пароль и для keystore, и для ключа
+- локальные секреты хранятся только в игнорируемой папке `secrets/`
+- клиент должен проверять подпись по тому же каноническому JSON-представлению, что и сервер

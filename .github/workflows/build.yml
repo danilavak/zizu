@@ -14,13 +14,17 @@ permissions:
   security-events: write
   packages: write
 
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 env:
   JAVA_VERSION: "21"
   ARTIFACT_NAME: zizu-jar
-  H2_DB_URL: jdbc:h2:mem:zizu-ci;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
   POSTGRES_CI_URL: jdbc:postgresql://localhost:5432/zizu_ci
   POSTGRES_CI_USERNAME: zizu
   POSTGRES_CI_PASSWORD: zizu
+  DEPENDENCY_CHECK_DATA_DIR: /home/runner/.dependency-check-data
 
 jobs:
   secret_scan:
@@ -86,6 +90,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -106,6 +111,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -118,6 +124,52 @@ jobs:
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./target/*.jar
+
+  compose_smoke:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare environment file
+        run: cp .env.example .env
+
+      - name: Build and start stack
+        run: docker compose up -d --build
+
+      - name: Wait for application health
+        run: |
+          mkdir -p target
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:8080/actuator/health > target/compose-health.json; then
+              cat target/compose-health.json
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Контейнерный стек не поднялся"
+          exit 1
+
+      - name: Collect compose logs
+        if: always()
+        run: |
+          mkdir -p target/compose
+          docker compose ps > target/compose/compose-ps.txt
+          docker compose logs --no-color > target/compose/compose-logs.txt
+
+      - name: Upload compose logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-logs
+          path: target/compose
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v
 
   publish_container:
     runs-on: ubuntu-latest
@@ -135,6 +187,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
@@ -184,12 +237,28 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Prepare Maven Wrapper
         run: chmod +x ./mvnw
 
+      - name: Cache Dependency-Check data
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.DEPENDENCY_CHECK_DATA_DIR }}
+          key: dependency-check-${{ runner.os }}-${{ hashFiles('pom.xml', 'dependency-check-suppressions.xml') }}
+          restore-keys: |
+            dependency-check-${{ runner.os }}-
+
       - name: Run SCA
-        run: ./mvnw -B dependency-check:check
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          if [ -n "$NVD_API_KEY" ]; then
+            ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} -DnvdApiKey="$NVD_API_KEY" dependency-check:check
+          else
+            ./mvnw -B -DdataDirectory=${{ env.DEPENDENCY_CHECK_DATA_DIR }} dependency-check:check
+          fi
 
       - name: Upload SCA report
         if: always()
@@ -226,6 +295,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -315,6 +385,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4
@@ -405,6 +476,7 @@ jobs:
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
+          cache: maven
 
       - name: Download artifact
         uses: actions/download-artifact@v4
